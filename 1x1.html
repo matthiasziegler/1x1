@@ -2,7 +2,8 @@
        "http://www.w3.org/TR/html4/strict.dtd">
 <html>
 <head>
-<title>Rechnen üben</title>
+<meta charset="UTF-8">
+<title>Rechnen Ã¼ben</title>
 
 <script Language="JavaScript" src="diagram/diagram.js"></script>
 
@@ -144,7 +145,7 @@ function TasteGedrueckt (Ereignis) {
     Tastencode = Ereignis.keyCode;
   }
   if ( Tastencode == 13 ) {  
-//    alert("Taste mit Dezimalwert " + Tastencode + " gedrückt");
+//    alert("Taste mit Dezimalwert " + Tastencode + " gedrÃ¼ckt");
     checkErgebnisUndNeueAufgabe();
   }
 }
@@ -157,7 +158,7 @@ document.onkeydown = TasteGedrueckt;
 
 <body nobackground="images\\mathematik.gif">
 
-<p>Rechnen üben ...</p>
+<p>Rechnen Ã¼ben ...</p>
 
 <form name="FormAufgabe" action="">
 
@@ -258,18 +259,18 @@ function neueAufgabe(min, max, operation) {
 	TextName.value = glUserName;
 	TextOperation.value = operation;
 	if ( glGesamtRechnungen < 50 ) {
-		// 50 zufällige Rechnungen
+		// 50 zufÃ¤llige Rechnungen
 		var z1 = zufallsZahl(min, max);
 		var z2 = zufallsZahl(min, max);
 	}
 	else if ( a = welcheNochNichtGerechnet() ) {
-		// dann den Rest systematisch auffüllen
+		// dann den Rest systematisch auffÃ¼llen
 		z1 = a[0];
 		z2 = a[1];
 		delete a;
 	} 
 	else {
-		// dann systematisch die Problemkinder üben
+		// dann systematisch die Problemkinder Ã¼ben
 		a = welcheLangDauert();
 		z1 = a[0];
 		z2 = a[1];
@@ -377,7 +378,7 @@ function checkErgebnisUndNeueAufgabe() {
   neueAufgabe(1, 10, glOperation);
 }
 
-// hier beginnt die eigentliche Ausführung
+// hier beginnt die eigentliche AusfÃ¼hrung
 
 glOperation = "*";
 document.FormAufgabe.TextglOperation.value = glOperation;
