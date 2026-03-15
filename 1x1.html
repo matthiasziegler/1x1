@@ -1,0 +1,391 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
+       "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<title>Rechnen üben</title>
+
+<script Language="JavaScript" src="diagram/diagram.js"></script>
+
+<script type="text/javascript">
+function Zeit () {
+  var Jetzt = new Date();
+  var Tag = Jetzt.getDate();
+  var Monat = Jetzt.getMonth() + 1;
+  var Jahr = Jetzt.getYear();
+  if (Jahr < 999)
+    Jahr += 1900;
+  var Vortag = ((Tag < 10) ? "0" : "");
+  var Vormon = ((Monat < 10) ? ".0" : ".");
+  var Datum = Vortag + Tag + Vormon + Monat + "." + Jahr;
+  document.write("<h1>" + Datum + "<\/h1>")
+}
+
+// alert("Jetzt geht es von vorn los");
+
+var glUserName = "Name?";
+var glOperation = "*";
+var glEins = 0;
+var glZwei = 0;
+var glEinzelDauer = 0;
+var glGesamtDauer = 0;
+var glGesamtRechnungen = 0;
+var glGesamtRichtig = 0;
+var glGesamtFalsch = 0;
+var glDurchschnittszeit = 0;
+
+var glZeitDateAndTime = 0;
+var glZeitAnfang = 0;
+var glZeitEnde = 0;
+var glRichtigesErgebnis = 0;
+var glKorrekt = 0;
+
+var glErgebnisDauer = new Array(11);
+var glDots = new Array(11);
+
+for (i=0; i<=11; i++) {
+	glErgebnisDauer[i] = new Array (11);
+	glDots[i] = new Array (11);
+}
+
+for (i=0; i<=11; i++) {
+	for (j=0; j<=11; j++) {
+		glErgebnisDauer[i][j] = 0;
+		glDots[i][j] = 0;
+	}
+}
+
+function welcheNochNichtGerechnet() {
+	a = new Array (2);
+	for (i=1; i<=10; i++) {
+		for (j=1; j<=10; j++) {
+			if ( glErgebnisDauer[i][j] == 0 ) {
+				a[0] = i;
+				a[1] = j;
+				return a;
+			}
+		}
+	}
+	return false;
+}
+
+function welcheLangDauert() {
+	a = new Array (2);
+	var max = 0;
+	for (i=1; i<=10; i++) {
+		for (j=1; j<=10; j++) {
+			if ( glErgebnisDauer[i][j] > max ) {
+				a[0] = i;
+				a[1] = j;
+				max = glErgebnisDauer[i][j];
+			}
+		}
+	}
+	return a;
+}
+
+
+function saveUser(name) {
+  glUserName = name;
+//  alert("glUserName auf " + glUserName + " gesetzt.");
+}
+
+function saveOperation(op) {
+  glOperation = op;
+  neueAufgabe(1, 10, glOperation);
+  alert("glOperation auf " + glOperation + " gesetzt.");
+}
+
+// content is the data (a string) you'll write to file. 
+// filename is a string filename to write to on server side. 
+// This function uses iFrame as a buffer, it fills it up with your content 
+// and prompts the user to save it out. 
+function save_content_to_file(content, filename) {     
+  alert("File ist " + filename + "und Inhalt ist " + content );
+  var dlg = false;     
+  with (document) {      
+	ir=createElement('iframe');      
+	ir.id='ifr';      
+	ir.location='about.blank';      
+	ir.style.display='none';      
+	body.appendChild(ir);       
+	with ( getElementById('ifr').contentWindow.document) {
+		open("text/plain", "replace");            
+		charset = "utf-8";            
+		write(content);            
+		close();            
+		document.charset = "utf-8";   
+		alert ("vor speichern");         
+		dlg = execCommand('SaveAs', false, filename);        
+		alert ("nach speichern");
+	}        
+	body.removeChild(ir);      
+  }     
+return dlg; 
+} 
+
+function export_to_file(content){
+//	var uriContent = "data:xls/utf-8," + encodeURIComponent(content);
+//	window.open(uriContent);
+var uriContent = "data:application/octet-stream," + encodeURIComponent(content);
+newWindow=window.open(uriContent, 'filename.txt');
+	
+//  var win = window.open();
+//  win.document.open();
+//  win.document.write(content);	
+}
+
+
+function TasteGedrueckt (Ereignis) {
+  if (!Ereignis)
+    Ereignis = window.event;
+  if (Ereignis.which) {
+    Tastencode = Ereignis.which;
+  } else if (Ereignis.keyCode) {
+    Tastencode = Ereignis.keyCode;
+  }
+  if ( Tastencode == 13 ) {  
+//    alert("Taste mit Dezimalwert " + Tastencode + " gedrückt");
+    checkErgebnisUndNeueAufgabe();
+  }
+}
+
+document.onkeydown = TasteGedrueckt;
+
+
+</script>
+</head>
+
+<body nobackground="images\\mathematik.gif">
+
+<p>Rechnen üben ...</p>
+
+<form name="FormAufgabe" action="">
+
+Name: 
+<input type="text" size="10" name="TextName" onchange="saveUser(this.value)">
+Operation: 
+<input type="text" size="10" name="TextglOperation" onchange="saveOperation(this.value)">
+<br>
+
+Aufgabe:  
+<input type="text" size="5" name="TextEins">
+<input type="text" size="2" name="TextOperation">
+<input type="text" size="5" name="TextZwei">
+= 
+<input type="text" size="5" name="TextErgebnis">
+
+<input type="button" name="OK" value="OK" onclick="checkErgebnisUndNeueAufgabe()">
+
+<br>
+Ergebnisse: <input type=text name="TextStatistik" size="66">
+<br>
+<textarea cols="60" rows="8" name="TextErgebnisseSammeln">
+</textarea> 
+
+<div style='position:relative; top:0px; height:100px'>
+<script language="JavaScript">
+  document.open();
+  var D=new Diagram();
+  D.SetFrame(30, 30, 330, 330);
+  D.SetBorder(0.5, 10.5, 0.5, 10.5);
+  D.XGridDelta=1;
+  D.YGridDelta=1;
+  D.SetGridColor("#808080");
+  D.Draw("#FF80FF", "#000000", false);
+
+  for (x=1; x<=10; x++) {
+	  for (y=1; y<=10; y++) {
+		  yy = 10-y+1;
+		  glDots[x][y] = new Pie(x*30+15,yy*30+15,0,glErgebnisDauer[x][y]+2,0,360,"#000000","x="+x+" y="+y+" Dauer="+glErgebnisDauer[x][y]);
+	  }
+  }
+  document.close();
+</script>
+</div>
+
+<!--
+<input type="button" name="Speichern" value="Speichern" onclick="export_to_file(document.FormAufgabe.TextErgebnisseSammeln.value)">
+-->
+
+</form>
+
+
+<script type="text/javascript">
+
+function updateDot(x,y,dauer) {
+	// wenn kleiner als bisheriges min dann neues Min setzen und neuen dot mit angepasstem Radius zeichnen
+	if ( glErgebnisDauer[x][y] == 0 || dauer < glErgebnisDauer[x][y] ) { 
+		glErgebnisDauer[x][y] = dauer;
+		glDots[x][y].SetTitle("x="+x+" y="+y+" Dauer="+glErgebnisDauer[x][y]);
+		if ( dauer < 2 ) 
+			glDots[x][y].SetColor("#00FF00");
+		else if ( dauer > 4 )
+			glDots[x][y].SetColor("#FF0000");
+		else
+			glDots[x][y].SetColor("#F6F600");
+				
+		glDots[x][y].ResizeTo(x*30+15,(10-y+1)*30+15,0,glErgebnisDauer[x][y]*3,0,360);
+	}
+}
+
+</SCRIPT> 
+
+<script type="text/javascript">
+
+function zufallsZahl(min, max) {
+  var zufallsZahl = Math.floor(Math.random() * (max - min + 1)) + min;
+//  alert("min = " + min + " und max = " + max + " zufallsZahl = " + zufallsZahl + " !");
+  return zufallsZahl;
+}
+
+function setzeZeitAnfang() {
+  var zeit = new Date();
+  var ms = zeit.getTime();
+  glZeitDateAndTime = zeit;
+  glZeitAnfang = ms;
+}
+
+function setzeZeitEnde() {
+  var zeit = new Date();
+  var ms = zeit.getTime();
+  glZeitEnde = ms;
+  glEinzelDauer = (glZeitEnde - glZeitAnfang) / 1000;
+//  glGesamtDauer += glEinzelDauer;
+}
+
+function neueAufgabe(min, max, operation) {
+  with ( document.FormAufgabe ) {
+	TextName.value = glUserName;
+	TextOperation.value = operation;
+	if ( glGesamtRechnungen < 50 ) {
+		// 50 zufällige Rechnungen
+		var z1 = zufallsZahl(min, max);
+		var z2 = zufallsZahl(min, max);
+	}
+	else if ( a = welcheNochNichtGerechnet() ) {
+		// dann den Rest systematisch auffüllen
+		z1 = a[0];
+		z2 = a[1];
+		delete a;
+	} 
+	else {
+		// dann systematisch die Problemkinder üben
+		a = welcheLangDauert();
+		z1 = a[0];
+		z2 = a[1];
+		delete a;
+	}
+	switch (operation) {
+  		case "*":
+			TextEins.value = z1;
+			TextZwei.value = z2;
+			glEins = z1;
+			glZwei = z2;
+			glRichtigesErgebnis = z1 * z2;
+			break;
+  		case "+":
+			TextEins.value = z1;
+			TextZwei.value = z2;
+			glEins = z1;
+			glZwei = z2;
+    			glRichtigesErgebnis = z1 + z2;
+    			break;
+  		case "-":
+			TextEins.value = z1 + z2;
+			TextZwei.value = z2;
+			glEins = z1 + z2;
+			glZwei = z2;
+			glRichtigesErgebnis = z1;
+    			break;
+  		case "/":
+			TextEins.value = z1 * z2;
+			TextZwei.value = z2;
+			glEins = z1*z2;
+			glZwei = z2;
+    			glRichtigesErgebnis = z1;
+    			break;
+  		default:
+    			alert("Ich kann die Rechnung mit " + operation + "noch nicht. Sorry!");
+    			break;
+	}
+	TextErgebnis.value = "";
+	TextErgebnis.focus();
+  }
+  setzeZeitAnfang();
+}
+
+function checkErgebnis() {
+  var msg = "leer";
+  setzeZeitEnde();
+  eingegebenesErgebnis = parseInt(document.FormAufgabe.TextErgebnis.value);
+  glKorrekt = (eingegebenesErgebnis == glRichtigesErgebnis);
+  glGesamtDauer += glEinzelDauer;
+  glGesamtRechnungen += 1;
+  glDurchschnittszeit = glGesamtDauer / glGesamtRechnungen;
+  if ( eingegebenesErgebnis == glRichtigesErgebnis ) {
+	 glGesamtRichtig += 1;
+  	 updateDot(glEins,glZwei,glEinzelDauer);
+	 msg = "Das ist richtig! Du hast " + glEinzelDauer + " sec gebraucht!";
+	}
+  else {
+	 glGesamtFalsch += 1;
+	 msg = "Falsch! Das richtige Ergebnis ist " + glRichtigesErgebnis + " !";
+      	}
+  updateTextStatistik();
+  alert(msg);
+}
+
+function updateTextStatistik() {
+  document.FormAufgabe.TextStatistik.value = "Gesamt: " + glGesamtRechnungen + " Richtig: " + glGesamtRichtig + " Falsch: " + glGesamtFalsch + " Durchschnittszeit: " + glDurchschnittszeit.toFixed(2) + " Gesamtzeit: " + (glGesamtDauer/60).toFixed(1);
+}
+
+
+function formatDate(d) {
+  alert("formatDate bekommt: " + d);
+  return("hallo");
+}
+
+function formatTime(d) {
+  var h = (d.getHours () < 10 ? '0' + d.getHours () : d.getHours ());
+  var m = (d.getMinutes () < 10 ? '0' + d.getMinutes () : d.getMinutes ());
+  var s = (d.getSeconds () < 10 ? '0' + d.getSeconds () : d.getSeconds ());
+  var timeString = h + ":" + m + ":" + s;
+  return timeString;
+}
+
+function saveResult(delimiter) {
+  var result = "";
+  with (document.FormAufgabe) {
+ 	result = result + glUserName      + delimiter;
+ 	result = result + TextEins.value      + delimiter;
+ 	result = result + TextOperation.value + delimiter;
+ 	result = result + TextZwei.value      + delimiter;
+ 	result = result + TextErgebnis.value  + delimiter;
+ 	result = result + glKorrekt           + delimiter;
+//  	result = result + formatDate(glZeitDateAndTime)  + delimiter;
+// 	result = result + formatTime(glZeitDateAndTime)  + delimiter;
+ 	result = result + glEinzelDauer + "\n";
+  }
+//  alert("Result ist: " + result + " !");
+  document.FormAufgabe.TextErgebnisseSammeln.value = result + document.FormAufgabe.TextErgebnisseSammeln.value;
+//  alert("saveResult Ende");
+}
+
+function checkErgebnisUndNeueAufgabe() {
+  checkErgebnis();
+  saveResult(",");
+  neueAufgabe(1, 10, glOperation);
+}
+
+// hier beginnt die eigentliche Ausführung
+
+glOperation = "*";
+document.FormAufgabe.TextglOperation.value = glOperation;
+neueAufgabe(1, 10, glOperation);
+
+</script>
+
+
+</body>
+</html>
+
